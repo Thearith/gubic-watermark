@@ -1,23 +1,31 @@
-const express = require('express')
-const asyncWrap = require('../../AsyncMiddleware')
-const Multer = require('multer')
+const gcsHelpers = require('./GCSStorage')
+const dotenv = require('dotenv')
+const storage = gcsHelpers.storage
 
-const multer = Multer({
-    storage: Multer.MemoryStorage
-})
+dotenv.config()
+const DEFAULT_BUCKET_NAME 				= process.env.DEFAULT_BUCKET_NAME
+const WATERMARK_RESULT_DIRECTORY_NAME	= process.env.WATERMARK_RESULT_DIRECTORY_NAME
 
-const router = express.Router()
+async function uploadFileToGCS(file) {
+	const bucketName = DEFAULT_BUCKET_NAME
+    const bucket = storage.bucket(bucketName)
+	const directoryName = WATERMARK_RESULT_DIRECTORY_NAME
+	const fileName = gcsHelpers.getFileName(file.originalname)
+	const gcsFileName = `${directoryName}/${fileName}`
+	const gcsFile = bucket.file(gcsFileName)
 
-router.post(
-    "/images",
-    multer.array('images'),
-    asyncWrap(async (req, res) => {
-        for(index in req.files) {
-            const image = req.files[index]
-            
-            // await uploadFileToGCS(file, directoryName)
-        }
+	await gcsFile.save(file.buffer, {
+		metadata: {
+			contentType: file.mimetype,
+		}
 	})
-)
+	
+	await gcsFile.makePublic()
+	file.gcsUrl = gcsHelpers.getPublicUrl(bucketName, gcsFileName)
 
-module.exports = router
+	return file
+}
+
+module.exports = {
+	uploadFileToGCS
+}
