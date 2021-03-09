@@ -1,17 +1,20 @@
 const Jimp = require('jimp')
 const fs = require('fs')
+const path = require('path')
+
 const fsPromises = fs.promises
 
-const WATERMARK_DIR         = 'watermarks'
-const ORIGINAL_PHOTOS_DIR   = 'photos'
-const RESULT_PHOTOS_DIR     = 'results'
+const WATERMARK_DIR         = path.resolve('./watermarks')
+const RATIO_1_1_FILE        = '1-1.png'
+const RATIO_3_4_FILE        = '3-4.png'
+const RATIO_4_3_FILE        = '4-3.png'
+const RATIO_9_16_FILE       = '9-16.png'
+const RATIO_16_9_FILE       = '16-9.png'
 
-async function watermarkImage(
-    originalPath,
-    resultPath
-) {
-    const originalImg = await Jimp.read(originalPath)
+const ORIGINAL_PHOTOS_DIR   = path.resolve('./photos')
+const RESULT_PHOTOS_DIR     = path.resolve('./results')
 
+async function watermarkImage(originalImg) {
     // Get correct watermark
     const originalWidth = originalImg.bitmap.width
     const originalHeight = originalImg.bitmap.height
@@ -25,6 +28,15 @@ async function watermarkImage(
     // Overlay watermark on top of image
     originalImg.composite(watermarkImg, 0, 0)
 
+    return originalImg
+}
+
+async function watermarkLocalImages(
+    originalPath,
+    resultPath
+) {
+    const originalImg = await Jimp.read(originalPath)
+    const watermarkImg = await watermarkImage(originalImg)
     await originalImg.writeAsync(resultPath)
 }
 
@@ -32,15 +44,15 @@ function getWatermark(imageWidth, imageHeight) {
     const ratio = imageWidth / imageHeight
     
     if (ratio < 0.7) {
-        return `${WATERMARK_DIR}/9-16.png`
+        return `${WATERMARK_DIR}/${RATIO_9_16_FILE}`
     } else if (ratio < 0.95) {
-        return `${WATERMARK_DIR}/3-4.png`
+        return `${WATERMARK_DIR}/${RATIO_3_4_FILE}`
     } else if (ratio < 1.3) {
-        return `${WATERMARK_DIR}/1-1.png`
+        return `${WATERMARK_DIR}/${RATIO_1_1_FILE}`
     } else if (ratio < 1.7) {
-        return `${WATERMARK_DIR}/4-3.png`
+        return `${WATERMARK_DIR}/${RATIO_4_3_FILE}`
     } else {
-        return `${WATERMARK_DIR}/19-6.png`
+        return `${WATERMARK_DIR}/${RATIO_16_9_FILE}`
     }
 
 }
@@ -59,8 +71,12 @@ async function run() {
         const resultPath = `${RESULT_PHOTOS_DIR}/${fileName}`
 
         console.log(`Watermarking ${fileName} ...`)
-        await watermarkImage(originalPath, resultPath)
+        await watermarkLocalImages(originalPath, resultPath)
     }
+}
+
+module.exports = {
+    watermarkImage
 }
 
 run()
