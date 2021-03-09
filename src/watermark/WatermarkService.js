@@ -1,8 +1,8 @@
 const express = require('express')
 const Multer = require('multer')
 const watermark = require('./watermark')
-const asyncWrap = require('../../AsyncMiddleware')
-const HttpCodes = require('../../HttpCodes')
+const asyncWrap = require('../error/AsyncMiddleware')
+const HttpCodes = require('../HttpCodes')
 
 const multer = Multer({
     storage: Multer.MemoryStorage

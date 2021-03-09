@@ -76,7 +76,8 @@ async function run() {
 }
 
 module.exports = {
-    watermarkImage
+    watermarkImage,
+    run
 }
 
-run()
+require('make-runnable')

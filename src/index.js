@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
-const watermarkService = require(path.resolve('./watermark/WatermarkService'))
+const watermarkService = require('./watermark/WatermarkService')
 
 const app = express()
 app.use(bodyParser.json())
