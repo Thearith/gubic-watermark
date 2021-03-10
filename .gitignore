@@ -12,3 +12,4 @@ __pycache__
 photos/
 results/
 watermarks/
+.env

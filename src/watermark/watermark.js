@@ -1,6 +1,7 @@
 const Jimp = require('jimp')
 const fs = require('fs')
 const path = require('path')
+const sizeOf = require('image-size')
 
 const fsPromises = fs.promises
 
@@ -14,10 +15,13 @@ const RATIO_16_9_FILE       = '16-9.png'
 const ORIGINAL_PHOTOS_DIR   = path.resolve('./photos')
 const RESULT_PHOTOS_DIR     = path.resolve('./results')
 
-async function watermarkImage(originalImg) {
+async function watermarkImage(original) {
+    const originalImg = await Jimp.read(Buffer.from(original.buffer, 'base64'))
+    const dimension = sizeOf(original.buffer)
+
     // Get correct watermark
-    const originalWidth = originalImg.bitmap.width
-    const originalHeight = originalImg.bitmap.height
+    const originalWidth = dimension.width
+    const originalHeight = dimension.height
     const watermarkPath = getWatermark(originalWidth, originalHeight)
     console.log(watermarkPath + "\n")
     const watermarkImg = await Jimp.read(watermarkPath)
@@ -36,7 +40,20 @@ async function watermarkLocalImages(
     resultPath
 ) {
     const originalImg = await Jimp.read(originalPath)
-    const watermarkImg = await watermarkImage(originalImg)
+
+    // Get correct watermark
+    const originalWidth = originalImg.bitmap.width
+    const originalHeight = originalImg.bitmap.height
+    const watermarkPath = getWatermark(originalWidth, originalHeight)
+    console.log(watermarkPath + "\n")
+    const watermarkImg = await Jimp.read(watermarkPath)
+
+    // Resize watermark to original image size
+    watermarkImg.resize(originalWidth, originalHeight)
+
+    // Overlay watermark on top of image
+    originalImg.composite(watermarkImg, 0, 0)
+
     await originalImg.writeAsync(resultPath)
 }
 

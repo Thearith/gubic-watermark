@@ -3,6 +3,7 @@ const Multer = require('multer')
 const watermark = require('./watermark')
 const asyncWrap = require('../error/AsyncMiddleware')
 const HttpCodes = require('../HttpCodes')
+const upload = require('./upload')
 
 const multer = Multer({
     storage: Multer.MemoryStorage
@@ -17,14 +18,16 @@ router.post(
         for(index in req.files) {
             const image = req.files[index]
             const watermarkImage = await watermark.watermarkImage(image)
-            const file = await uploadFileToGCS(watermarkImage, directoryName)
-            res.status(HttpCodes.OK).send({
-                fileName: image.originalname,
+            const file = await upload.uploadFileToGCS(watermarkImage)
+            
+            res.status(HttpCodes.OK).json({
+                fileName: file.originalname,
                 gcsUrl: file.gcsUrl
             })
+            res.sendStatus(200)
         }
 
-        res.end()
+        // res.end()
 	})
 )
 
