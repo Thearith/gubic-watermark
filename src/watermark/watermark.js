@@ -45,19 +45,41 @@ async function watermarkLocalImages(
     // Resize watermark to original image size
     const originalWidth = originalImg.bitmap.width
     const originalHeight = originalImg.bitmap.height
-    
-    const ratioWidth = 
+    const ratioWidth = originalWidth / getGuidelineWidth(originalWidth, originalHeight)
+    const ratioHeight = originalHeight / getGuidelineHeight(originalWidth, originalHeight)
+    const watermarkWidth = LOGO_ORIGINAL_WIDTH * ratioWidth
+    const watermarkHeight = LOGO_ORIGINAL_HEIGHT * ratioHeight
+    const watermarkHor = LOGO_MARGIN * ratioWidth
+    const watermarkVert = LOGO_MARGIN * ratioHeight
 
-    watermarkImg.resize(originalWidth, originalHeight)
+    watermarkImg.resize(watermarkWidth, watermarkHeight)
 
     // Overlay watermark on top of image
-    originalImg.composite(watermarkImg, 0, 0)
+    const positionX = originalWidth - watermarkImg.positionX - watermarkHor
+    const positionY = watermarkVert
+    originalImg.composite(watermarkImg, positionX, positionY)
 
     await originalImg.writeAsync(resultPath)
 }
 
 function getGuidelineWidth(originalWidth, originalHeight) {
-    
+    const ratio = originalWidth / originalHeight
+
+    if (ratio < 1.3) {
+        return 1080
+    } else {
+        return 1920
+    }
+}
+
+function getGuidelineHeight(originalWidth, originalHeight) {
+    const ratio = originalWidth / originalHeight
+
+    if (ratio < 0.95) {
+        return 1920
+    } else {
+        return 1080
+    }
 }
 
 async function getAllImages(dir) {
