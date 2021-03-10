@@ -6,10 +6,12 @@ const sizeOf = require('image-size')
 const fsPromises = fs.promises
 
 const WATERMARK_DIR         = path.resolve('./watermarks')
-const JUST_LOGO_FILE        = 'Logo.png'
-
 const ORIGINAL_PHOTOS_DIR   = path.resolve('./photos')
 const RESULT_PHOTOS_DIR     = path.resolve('./results')
+const JUST_LOGO_FILE        = 'Logo.png'
+const LOGO_ORIGINAL_WIDTH   = 640
+const LOGO_ORIGINAL_HEIGHT  = 390
+const LOGO_MARGIN           = 20
 
 async function watermarkImage(original) {
     const originalImg = await Jimp.read(Buffer.from(original.buffer, 'base64'))
@@ -37,19 +39,25 @@ async function watermarkLocalImages(
     const originalImg = await Jimp.read(originalPath)
 
     // Get correct watermark
-    const originalWidth = originalImg.bitmap.width
-    const originalHeight = originalImg.bitmap.height
-    const watermarkPath = getWatermark(originalWidth, originalHeight)
-    console.log(watermarkPath + "\n")
+    const watermarkPath = `${WATERMARK_DIR}/${JUST_LOGO_FILE}`
     const watermarkImg = await Jimp.read(watermarkPath)
 
     // Resize watermark to original image size
+    const originalWidth = originalImg.bitmap.width
+    const originalHeight = originalImg.bitmap.height
+    
+    const ratioWidth = 
+
     watermarkImg.resize(originalWidth, originalHeight)
 
     // Overlay watermark on top of image
     originalImg.composite(watermarkImg, 0, 0)
 
     await originalImg.writeAsync(resultPath)
+}
+
+function getGuidelineWidth(originalWidth, originalHeight) {
+    
 }
 
 async function getAllImages(dir) {
