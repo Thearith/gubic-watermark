@@ -6,11 +6,7 @@ const sizeOf = require('image-size')
 const fsPromises = fs.promises
 
 const WATERMARK_DIR         = path.resolve('./watermarks')
-const RATIO_1_1_FILE        = '1-1.png'
-const RATIO_3_4_FILE        = '3-4.png'
-const RATIO_4_3_FILE        = '4-3.png'
-const RATIO_9_16_FILE       = '9-16.png'
-const RATIO_16_9_FILE       = '16-9.png'
+const JUST_LOGO_FILE        = 'Logo.png'
 
 const ORIGINAL_PHOTOS_DIR   = path.resolve('./photos')
 const RESULT_PHOTOS_DIR     = path.resolve('./results')
@@ -22,8 +18,7 @@ async function watermarkImage(original) {
     // Get correct watermark
     const originalWidth = dimension.width
     const originalHeight = dimension.height
-    const watermarkPath = getWatermark(originalWidth, originalHeight)
-    console.log(watermarkPath + "\n")
+    const watermarkPath = `${WATERMARK_DIR}/${JUST_LOGO_FILE}`
     const watermarkImg = await Jimp.read(watermarkPath)
 
     // Resize watermark to original image size
@@ -55,23 +50,6 @@ async function watermarkLocalImages(
     originalImg.composite(watermarkImg, 0, 0)
 
     await originalImg.writeAsync(resultPath)
-}
-
-function getWatermark(imageWidth, imageHeight) {
-    const ratio = imageWidth / imageHeight
-    
-    if (ratio < 0.7) {
-        return `${WATERMARK_DIR}/${RATIO_9_16_FILE}`
-    } else if (ratio < 0.95) {
-        return `${WATERMARK_DIR}/${RATIO_3_4_FILE}`
-    } else if (ratio < 1.3) {
-        return `${WATERMARK_DIR}/${RATIO_1_1_FILE}`
-    } else if (ratio < 1.7) {
-        return `${WATERMARK_DIR}/${RATIO_4_3_FILE}`
-    } else {
-        return `${WATERMARK_DIR}/${RATIO_16_9_FILE}`
-    }
-
 }
 
 async function getAllImages(dir) {
