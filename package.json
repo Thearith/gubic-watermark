@@ -8,7 +8,7 @@
     "prod": "forever stopall && forever start src/index.js",
     "stop": "forever stopall",
     "start": "node src/index.js",
-    "watermark": "node src/watermark/watermark.js run"
+    "watermark": "node src/watermark/local-watermark.js run"
   },
   "repository": {
     "type": "git",
