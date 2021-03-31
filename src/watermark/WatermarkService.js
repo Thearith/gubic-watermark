@@ -3,7 +3,7 @@ const Multer = require('multer')
 const watermark = require('./watermark')
 const asyncWrap = require('../error/AsyncMiddleware')
 const HttpCodes = require('../HttpCodes')
-const upload = require('./upload')
+const upload = require('./uploads/upload')
 
 const multer = Multer({
     storage: Multer.MemoryStorage
