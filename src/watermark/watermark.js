@@ -144,7 +144,8 @@ async function watermarkPhoneNumber(originalImg, imageWidth, imageHeight) {
 }
 
 function getRatio(originalWidth, originalHeight) {
-    
+    const min = Math.min(originalWidth, originalHeight)
+    return min / 1080
 }
 
 module.exports = {
