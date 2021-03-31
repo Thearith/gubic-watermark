@@ -1,100 +1,152 @@
 const Jimp = require('jimp')
-const fs = require('fs')
 const path = require('path')
 const sizeOf = require('image-size')
 
-const fsPromises = fs.promises
-
-const WATERMARK_DIR         = path.resolve('./watermarks')
-const RATIO_1_1_FILE        = '1-1.png'
-const RATIO_3_4_FILE        = '3-4.png'
-const RATIO_4_3_FILE        = '4-3.png'
-const RATIO_9_16_FILE       = '9-16.png'
-const RATIO_16_9_FILE       = '16-9.png'
-
-const ORIGINAL_PHOTOS_DIR   = path.resolve('./photos')
-const RESULT_PHOTOS_DIR     = path.resolve('./results')
+const WATERMARK_DIR             = path.resolve('./watermarks-logo')
+const LOGO_PATH                 = WATERMARK_DIR + '/Logo.png'
+const ELLIPSE_PATH              = WATERMARK_DIR + '/Ellipse.png'
+const GRADIENT_PATH             = WATERMARK_DIR + '/Bottom Gradient.png'
+const SLOGAN_PATH               = WATERMARK_DIR + '/Slogan.png'
+const CORE_VALUE_PATH           = WATERMARK_DIR + '/Core value.png'
+const PHONE_NUMBER_TEXT_PATH    = WATERMARK_DIR + '/Phone Number Text.png'
+const PHONE_NUMBER_PATH         = WATERMARK_DIR + '/Phone Number.png'
+const PHONE_ICON_PATH           = WATERMARK_DIR + '/Phone Icon.png'     
 
 async function watermarkImage(original) {
     const originalImg = await Jimp.read(Buffer.from(original.buffer, 'base64'))
     const dimension = sizeOf(original.buffer)
-
-    // Get correct watermark
     const originalWidth = dimension.width
     const originalHeight = dimension.height
-    const watermarkPath = getWatermark(originalWidth, originalHeight)
-    console.log(watermarkPath + "\n")
-    const watermarkImg = await Jimp.read(watermarkPath)
 
-    // Resize watermark to original image size
-    watermarkImg.resize(originalWidth, originalHeight)
-
-    // Overlay watermark on top of image
-    originalImg.composite(watermarkImg, 0, 0)
+    // Watermarking process
+    await watermarkEllipse(originalImg, originalWidth, originalHeight)
+    await watermarkLogo(originalImg, originalWidth, originalHeight)
+    await watermarkGradient(originalImg, originalWidth, originalHeight)
+    await watermarkSlogans(originalImg, originalWidth, originalHeight)
+    await watermarkPhoneNumber(originalImg, originalWidth, originalHeight)
 
     return originalImg
 }
 
-async function watermarkLocalImages(
-    originalPath,
-    resultPath
-) {
+async function watermarkLocalImages(originalPath, resultPath) {
     const originalImg = await Jimp.read(originalPath)
-
-    // Get correct watermark
     const originalWidth = originalImg.bitmap.width
     const originalHeight = originalImg.bitmap.height
-    const watermarkPath = getWatermark(originalWidth, originalHeight)
-    console.log(watermarkPath + "\n")
-    const watermarkImg = await Jimp.read(watermarkPath)
-
-    // Resize watermark to original image size
-    watermarkImg.resize(originalWidth, originalHeight)
-
-    // Overlay watermark on top of image
-    originalImg.composite(watermarkImg, 0, 0)
+    
+    // Watermarking process
+    await watermarkEllipse(originalImg, originalWidth, originalHeight)
+    await watermarkLogo(originalImg, originalWidth, originalHeight)
+    await watermarkGradient(originalImg, originalWidth, originalHeight)
+    await watermarkSlogans(originalImg, originalWidth, originalHeight)
+    await watermarkPhoneNumber(originalImg, originalWidth, originalHeight)
 
     await originalImg.writeAsync(resultPath)
 }
 
-function getWatermark(imageWidth, imageHeight) {
-    const ratio = imageWidth / imageHeight
+async function watermarkLogo(originalImg, imageWidth, imageHeight) {
+    const ratioWidth = imageWidth / 1080
+    const ratioHeight = imageHeight / 1080
     
-    if (ratio < 0.7) {
-        return `${WATERMARK_DIR}/${RATIO_9_16_FILE}`
-    } else if (ratio < 0.95) {
-        return `${WATERMARK_DIR}/${RATIO_3_4_FILE}`
-    } else if (ratio < 1.3) {
-        return `${WATERMARK_DIR}/${RATIO_1_1_FILE}`
-    } else if (ratio < 1.7) {
-        return `${WATERMARK_DIR}/${RATIO_4_3_FILE}`
-    } else {
-        return `${WATERMARK_DIR}/${RATIO_16_9_FILE}`
-    }
+    const logo = await Jimp.read(LOGO_PATH)
+    const resizeWidth = 360 * ratioWidth
+    logo.resize(resizeWidth, Jimp.AUTO)
 
+    const marginTop = ratioHeight * 40
+    const marginRight = ratioWidth * 40
+    const positionX = imageWidth - marginRight - resizeWidth
+    const positionY = marginTop
+    originalImg.composite(logo, positionX, positionY)
 }
 
-async function getAllImages(dir) {
-    const files = await fsPromises.readdir(dir)
-    const imageFiles = files.filter((file) => file.charAt(0) != '.')
-    return imageFiles
+async function watermarkEllipse(originalImg, imageWidth, imageHeight) {
+    const ratioWidth = imageWidth / 1080
+
+    const logo = await Jimp.read(ELLIPSE_PATH)
+    const resizeWidth = ratioWidth * 640
+    logo.resize(resizeWidth, Jimp.AUTO)
+
+    const positionX = imageWidth - resizeWidth + 40
+    const positionY = -50
+    originalImg.composite(logo, positionX, positionY)
 }
 
-async function run() {
-    const imageFiles = await getAllImages(ORIGINAL_PHOTOS_DIR)
-    for (let i=0; i<imageFiles.length; i++) {
-        const fileName = imageFiles[i]
-        const originalPath = `${ORIGINAL_PHOTOS_DIR}/${fileName}`
-        const resultPath = `${RESULT_PHOTOS_DIR}/${fileName}`
+async function watermarkGradient(originalImg, imageWidth, imageHeight) {
+    const ratioHeight = imageHeight / 1080
 
-        console.log(`Watermarking ${fileName} ...`)
-        await watermarkLocalImages(originalPath, resultPath)
-    }
+    const logo = await Jimp.read(GRADIENT_PATH)
+    const resizeWidth = imageWidth
+    const resizeHeight = 160 * ratioHeight
+    logo.resize(resizeWidth, resizeHeight)
+
+    const positionX = 0
+    const positionY = imageHeight - resizeHeight
+    originalImg.composite(logo, positionX, positionY)
+}
+
+async function watermarkSlogans(originalImg, imageWidth, imageHeight) {
+    const ratioWidth = imageWidth / 1080
+    const ratioHeight = imageHeight / 1080
+
+    // core value at bottom left
+    const coreValue = await Jimp.read(CORE_VALUE_PATH)
+    coreValue.resize(Jimp.AUTO, 53)
+    const resizeHeight = coreValue.bitmap.height
+    const marginLeft = ratioWidth * 20
+    const marginBottom = ratioHeight * 24
+    const positionX = marginLeft
+    const positionY = imageHeight - marginBottom - resizeHeight / 2
+    originalImg.composite(coreValue, positionX, positionY)
+
+    // slogan above core value
+    const slogan = await Jimp.read(SLOGAN_PATH)
+    slogan.resize(Jimp.AUTO, 70)
+    const sResizeHeight = slogan.bitmap.height
+    const sMarginLeft = ratioWidth * 20
+    const sMarginBottom = ratioHeight * 8
+    const sPositionX = sMarginLeft
+    const sPositionY = imageHeight - (resizeHeight + marginBottom) - (sResizeHeight / 2 + sMarginBottom)
+    originalImg.composite(slogan, sPositionX, sPositionY)
+}
+
+async function watermarkPhoneNumber(originalImg, imageWidth, imageHeight) {
+    const ratioWidth = imageWidth / 1080
+    const ratioHeight = imageHeight / 1080
+
+    // Phone Number
+    const phoneNumber = await Jimp.read(PHONE_NUMBER_PATH)
+    phoneNumber.resize(Jimp.AUTO, 40)
+    const resizeWidth = phoneNumber.bitmap.width
+    const resizeHeight = phoneNumber.bitmap.height
+    const marginLeft = ratioWidth * 20
+    const marginBottom = ratioHeight * 28
+    const positionX = imageWidth - marginLeft - resizeWidth 
+    const positionY = imageHeight - marginBottom - resizeHeight / 2
+    originalImg.composite(phoneNumber, positionX, positionY)
+
+    // Phone Number Text
+    const phoneNumberText = await Jimp.read(PHONE_NUMBER_TEXT_PATH)
+    phoneNumberText.resize(Jimp.AUTO, 55)
+    const tResizeWidth = phoneNumberText.bitmap.width
+    const tResizeHeight = phoneNumberText.bitmap.height
+    const tMarginLeft = ratioWidth * 20
+    const tMarginBottom = ratioHeight * 15
+    const tPositionX = imageWidth - tMarginLeft - tResizeWidth
+    const tPositionY = imageHeight - (resizeHeight + marginBottom) - (tResizeHeight / 2 + tMarginBottom)
+    originalImg.composite(phoneNumberText, tPositionX, tPositionY)
+
+    // Phone Icon
+    const phoneIcon = await Jimp.read(PHONE_ICON_PATH)
+    const pResizeWidth = 40 * ratioWidth
+    phoneIcon.resize(pResizeWidth, Jimp.AUTO)
+    const pResizeHeight = phoneIcon.bitmap.height
+    const pMarginBottom = ratioHeight * 18
+    const paddingLeft = ratioWidth * 15
+    const pPositionX = imageWidth - (marginLeft + tResizeWidth) - (pResizeWidth + paddingLeft)
+    const pPositionY = imageHeight - (resizeHeight + marginBottom) - (pResizeHeight / 2 + pMarginBottom)
+    originalImg.composite(phoneIcon, pPositionX, pPositionY)
 }
 
 module.exports = {
     watermarkImage,
-    run
+    watermarkLocalImages
 }
-
-require('make-runnable')
