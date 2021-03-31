@@ -44,38 +44,37 @@ async function watermarkLocalImages(originalPath, resultPath) {
 }
 
 async function watermarkLogo(originalImg, imageWidth, imageHeight) {
-    const ratioWidth = imageWidth / 1080
-    const ratioHeight = imageHeight / 1080
+    const ratio = getRatio(imageWidth, imageHeight)
     
     const logo = await Jimp.read(LOGO_PATH)
-    const resizeWidth = 360 * ratioWidth
+    const resizeWidth = 360 * ratio
     logo.resize(resizeWidth, Jimp.AUTO)
 
-    const marginTop = ratioHeight * 40
-    const marginRight = ratioWidth * 40
+    const marginTop = ratio * 40
+    const marginRight = ratio * 40
     const positionX = imageWidth - marginRight - resizeWidth
     const positionY = marginTop
     originalImg.composite(logo, positionX, positionY)
 }
 
 async function watermarkEllipse(originalImg, imageWidth, imageHeight) {
-    const ratioWidth = imageWidth / 1080
+    const ratio = getRatio(imageWidth, imageHeight)
 
     const logo = await Jimp.read(ELLIPSE_PATH)
-    const resizeWidth = ratioWidth * 600
+    const resizeWidth = ratio * 640
     logo.resize(resizeWidth, Jimp.AUTO)
     const resizeHeight = logo.bitmap.height
-    const positionX = imageWidth - resizeWidth * 8 / 9
+    const positionX = imageWidth - resizeWidth * 6 / 7
     const positionY = - resizeHeight / 12
     originalImg.composite(logo, positionX, positionY)
 }
 
 async function watermarkGradient(originalImg, imageWidth, imageHeight) {
-    const ratioHeight = imageHeight / 1080
+    const ratio = getRatio(imageWidth, imageHeight)
 
     const logo = await Jimp.read(GRADIENT_PATH)
     const resizeWidth = imageWidth
-    const resizeHeight = 165 * ratioHeight
+    const resizeHeight = 180 * ratio
     logo.resize(resizeWidth, resizeHeight)
 
     const positionX = 0
@@ -84,66 +83,68 @@ async function watermarkGradient(originalImg, imageWidth, imageHeight) {
 }
 
 async function watermarkSlogans(originalImg, imageWidth, imageHeight) {
-    const ratioWidth = imageWidth / 1080
-    const ratioHeight = imageHeight / 1080
+    const ratio = getRatio(imageWidth, imageHeight)
 
     // core value at bottom left
     const coreValue = await Jimp.read(CORE_VALUE_PATH)
-    const resizeHeight = 50 * ratioHeight
+    const resizeHeight = 58 * ratio
     coreValue.resize(Jimp.AUTO, resizeHeight)
-    const marginLeft = ratioWidth * 20
-    const marginBottom = ratioHeight * 24
+    const marginLeft = ratio * 20
+    const marginBottom = ratio * 26
     const positionX = marginLeft
     const positionY = imageHeight - marginBottom - resizeHeight / 2
     originalImg.composite(coreValue, positionX, positionY)
 
     // slogan above core value
     const slogan = await Jimp.read(SLOGAN_PATH)
-    const sResizeHeight = 65 * ratioHeight
+    const sResizeHeight = 72 * ratio
     slogan.resize(Jimp.AUTO, sResizeHeight)
-    const sMarginLeft = ratioWidth * 20
-    const sMarginBottom = ratioHeight * 8
+    const sMarginLeft = ratio * 20
+    const sMarginBottom = ratio * 8
     const sPositionX = sMarginLeft
     const sPositionY = imageHeight - (resizeHeight + marginBottom) - (sResizeHeight / 2 + sMarginBottom)
     originalImg.composite(slogan, sPositionX, sPositionY)
 }
 
 async function watermarkPhoneNumber(originalImg, imageWidth, imageHeight) {
-    const ratioWidth = imageWidth / 1080
-    const ratioHeight = imageHeight / 1080
+    const ratio = getRatio(imageWidth, imageHeight)
 
     // Phone Number
     const phoneNumber = await Jimp.read(PHONE_NUMBER_PATH)
-    const resizeHeight = 35 * ratioHeight
+    const resizeHeight = 44 * ratio
     phoneNumber.resize(Jimp.AUTO, resizeHeight)
     const resizeWidth = phoneNumber.bitmap.width
-    const marginLeft = ratioWidth * 20
-    const marginBottom = ratioHeight * 28
+    const marginLeft = ratio * 20
+    const marginBottom = ratio * 30
     const positionX = imageWidth - marginLeft - resizeWidth 
     const positionY = imageHeight - marginBottom - resizeHeight / 2
     originalImg.composite(phoneNumber, positionX, positionY)
 
     // Phone Number Text
     const phoneNumberText = await Jimp.read(PHONE_NUMBER_TEXT_PATH)
-    const tResizeHeight = 50 * ratioHeight
+    const tResizeHeight = 60 * ratio
     phoneNumberText.resize(Jimp.AUTO, tResizeHeight)
     const tResizeWidth = phoneNumberText.bitmap.width
-    const tMarginLeft = ratioWidth * 20
-    const tMarginBottom = ratioHeight * 15
+    const tMarginLeft = ratio * 20
+    const tMarginBottom = ratio * 15
     const tPositionX = imageWidth - tMarginLeft - tResizeWidth
     const tPositionY = imageHeight - (resizeHeight + marginBottom) - (tResizeHeight / 2 + tMarginBottom)
     originalImg.composite(phoneNumberText, tPositionX, tPositionY)
 
     // Phone Icon
     const phoneIcon = await Jimp.read(PHONE_ICON_PATH)
-    const pResizeWidth = 33 * ratioWidth
+    const pResizeWidth = 40 * ratio
     phoneIcon.resize(pResizeWidth, Jimp.AUTO)
     const pResizeHeight = phoneIcon.bitmap.height
-    const pMarginBottom = ratioHeight * 18
-    const paddingLeft = ratioWidth * 10
+    const pMarginBottom = ratio * 18
+    const paddingLeft = ratio * 10
     const pPositionX = imageWidth - (marginLeft + tResizeWidth) - (pResizeWidth + paddingLeft)
     const pPositionY = imageHeight - (resizeHeight + marginBottom) - (pResizeHeight / 2 + pMarginBottom)
     originalImg.composite(phoneIcon, pPositionX, pPositionY)
+}
+
+function getRatio(originalWidth, originalHeight) {
+    
 }
 
 module.exports = {
